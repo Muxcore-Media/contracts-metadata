@@ -4,17 +4,28 @@ package muxcore.metadata.v1;
 
 option go_package = "github.com/Muxcore-Media/contracts-metadata/muxcore/metadata/v1;metadatav1";
 
+// MetadataService is the gRPC surface for MetadataProvider implementers.
 service MetadataService {
   rpc Search(SearchRequest) returns (SearchResponse);
   rpc GetMovieDetails(GetMovieDetailsRequest) returns (GetMovieDetailsResponse);
   rpc GetTVDetails(GetTVDetailsRequest) returns (GetTVDetailsResponse);
   rpc GetSeasonDetails(GetSeasonDetailsRequest) returns (GetSeasonDetailsResponse);
+  rpc GetEpisodeDetails(GetEpisodeDetailsRequest) returns (GetEpisodeDetailsResponse);
   rpc GetCollection(GetCollectionRequest) returns (GetCollectionResponse);
   rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse);
   rpc ListTrending(ListTrendingRequest) returns (ListTrendingResponse);
   rpc ListPopular(ListPopularRequest) returns (ListPopularResponse);
+  rpc ListSimilar(ListSimilarRequest) returns (ListSimilarResponse);
+  rpc ListRecommendations(ListRecommendationsRequest) returns (ListRecommendationsResponse);
   rpc FindByExternalID(FindByExternalIDRequest) returns (FindByExternalIDResponse);
   rpc GetAlternativeTitles(GetAlternativeTitlesRequest) returns (GetAlternativeTitlesResponse);
+}
+
+// ExternalIds carries provider-specific identifiers for lookup and cross-provider matching.
+message ExternalIds {
+  int32 tmdb_id = 1;
+  int32 tvdb_id = 2;
+  string imdb_id = 3;
 }
 
 message SearchRequest {
@@ -23,6 +34,10 @@ message SearchRequest {
   int32 page = 3;
   string language = 4;
   int32 year = 5;
+  // When unset or false, implementers should omit adult titles from results.
+  bool include_adult = 6;
+  // ISO 3166-1 region code for localized discover/search (e.g. "US").
+  string region = 7;
 }
 
 enum MediaType {
@@ -54,12 +69,16 @@ message SearchResult {
   double popularity = 13;
   string name = 14;
   string first_air_date = 15;
+  string imdb_id = 16;
+  int32 tvdb_id = 17;
 }
 
 message GetMovieDetailsRequest {
-  int32 tmdb_id = 1;
+  // Provider-native item id (TMDB id when using metadata-tmdb).
+  int32 id = 1;
   string language = 2;
   repeated string append_to_response = 3;
+  ExternalIds external_ids = 4;
 }
 
 message GetMovieDetailsResponse {
@@ -100,8 +119,9 @@ message Collection {
 }
 
 message GetCollectionRequest {
-  int32 tmdb_id = 1;
+  int32 id = 1;
   string language = 2;
+  ExternalIds external_ids = 3;
 }
 
 message GetCollectionResponse {
@@ -172,9 +192,10 @@ message CrewMember {
 }
 
 message GetTVDetailsRequest {
-  int32 tmdb_id = 1;
+  int32 id = 1;
   string language = 2;
   repeated string append_to_response = 3;
+  ExternalIds external_ids = 4;
 }
 
 message GetTVDetailsResponse {
@@ -195,7 +216,7 @@ message GetTVDetailsResponse {
   string status = 15;
   string original_language = 16;
   string homepage = 17;
-  string in_production = 18;
+  reserved 18; // was string in_production; use bool in_production at tag 30
   repeated Genre genres = 19;
   repeated Season seasons = 20;
   repeated ProductionCompany production_companies = 21;
@@ -207,6 +228,9 @@ message GetTVDetailsResponse {
   repeated CreatedBy created_by = 27;
   repeated Network networks = 28;
   repeated string origin_country = 29;
+  bool in_production = 30;
+  string imdb_id = 31;
+  int32 tvdb_id = 32;
 }
 
 message CreatedBy {
@@ -234,9 +258,22 @@ message Season {
 }
 
 message GetSeasonDetailsRequest {
-  int32 tmdb_id = 1;
+  int32 id = 1;
   int32 season_number = 2;
   string language = 3;
+  ExternalIds external_ids = 4;
+}
+
+message GetEpisodeDetailsRequest {
+  int32 id = 1;
+  int32 season_number = 2;
+  int32 episode_number = 3;
+  string language = 4;
+  ExternalIds external_ids = 5;
+}
+
+message GetEpisodeDetailsResponse {
+  Episode episode = 1;
 }
 
 message Episode {
@@ -251,6 +288,7 @@ message Episode {
   double vote_average = 9;
   int32 vote_count = 10;
   string production_code = 11;
+  string still_url = 12;
 }
 
 message GetSeasonDetailsResponse {
@@ -316,9 +354,39 @@ message ListPopularResponse {
   int32 page = 4;
 }
 
+message ListSimilarRequest {
+  MediaType type = 1;
+  int32 id = 2;
+  int32 page = 3;
+  string language = 4;
+  ExternalIds external_ids = 5;
+}
+
+message ListSimilarResponse {
+  repeated SearchResult results = 1;
+  int32 total_results = 2;
+  int32 total_pages = 3;
+  int32 page = 4;
+}
+
+message ListRecommendationsRequest {
+  MediaType type = 1;
+  int32 id = 2;
+  int32 page = 3;
+  string language = 4;
+  ExternalIds external_ids = 5;
+}
+
+message ListRecommendationsResponse {
+  repeated SearchResult results = 1;
+  int32 total_results = 2;
+  int32 total_pages = 3;
+  int32 page = 4;
+}
+
 message FindByExternalIDRequest {
   string external_id = 1;
-  string external_source = 2; // e.g. "imdb_id"
+  string external_source = 2; // e.g. "imdb_id", "tvdb_id"
   string language = 3;
 }
 
@@ -327,16 +395,17 @@ message FindByExternalIDResponse {
 }
 
 message GetAlternativeTitlesRequest {
-  int32 tmdb_id = 1;
+  int32 id = 1;
   MediaType type = 2;
+  ExternalIds external_ids = 3;
 }
 
 message AlternativeTitle {
   string title = 1;
-  string type = 2; // country / iso / title type from TMDB
+  string type = 2; // country / iso / title type from provider
 }
 
 message GetAlternativeTitlesResponse {
-  int32 tmdb_id = 1;
+  int32 id = 1;
   repeated AlternativeTitle titles = 2;
 }
