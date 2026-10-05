@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2026-10-05
+
+### Changed
+- CI runs on GitHub-hosted runners from the umbrella template; retired-origin workflows removed.
+- Dependencies resolve from published GitHub tags (no filesystem `replace`); requires core v0.6.0.
+
 ## [0.2.0] — 2026-08-31
 
 ### Added
@@ -8,7 +14,7 @@
 - `GetEpisodeDetails` RPC and `still_url` on `Episode`.
 - `ListSimilar` and `ListRecommendations` RPCs (media type + id + page).
 - `SearchRequest.include_adult` and `SearchRequest.region`.
-- Forgejo CI `proto-check` job.
+- CI `proto-check` job.
 - `contract_test.go` freezing RPC names and field numbers.
 
 ### Changed
