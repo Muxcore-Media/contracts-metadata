@@ -9,19 +9,19 @@ import (
 
 func TestMetadataServiceRPCNamesStable(t *testing.T) {
 	want := map[string]bool{
-		"Search":                true,
-		"GetMovieDetails":       true,
-		"GetTVDetails":          true,
-		"GetSeasonDetails":      true,
-		"GetEpisodeDetails":     true,
-		"GetCollection":         true,
-		"GetConfiguration":      true,
-		"ListTrending":          true,
-		"ListPopular":           true,
-		"ListSimilar":           true,
-		"ListRecommendations":   true,
-		"FindByExternalID":      true,
-		"GetAlternativeTitles":  true,
+		"Search":               true,
+		"GetMovieDetails":      true,
+		"GetTVDetails":         true,
+		"GetSeasonDetails":     true,
+		"GetEpisodeDetails":    true,
+		"GetCollection":        true,
+		"GetConfiguration":     true,
+		"ListTrending":         true,
+		"ListPopular":          true,
+		"ListSimilar":          true,
+		"ListRecommendations":  true,
+		"FindByExternalID":     true,
+		"GetAlternativeTitles": true,
 	}
 	got := make(map[string]bool, len(MetadataService_ServiceDesc.Methods))
 	for _, m := range MetadataService_ServiceDesc.Methods {
@@ -78,6 +78,34 @@ func TestGetTVDetailsResponseInProductionField(t *testing.T) {
 		t.Fatalf("in_production kind = %v, want bool", fd.Kind())
 	} else if fd.Number() != 30 {
 		t.Fatalf("in_production tag = %d, want 30", fd.Number())
+	}
+}
+
+// Certification fields are frozen: metadata-tmdb serves the same numbers from its
+// own proto/metadatav1 copy, and media-movies decodes that copy (ADR-0031 §2).
+func TestDetailResponseCertificationFields(t *testing.T) {
+	cases := []struct {
+		desc protoreflect.MessageDescriptor
+		want map[string]protoreflect.FieldNumber
+	}{
+		{(&GetMovieDetailsResponse{}).ProtoReflect().Descriptor(), map[string]protoreflect.FieldNumber{
+			"certification": 28, "certification_country": 29,
+		}},
+		{(&GetTVDetailsResponse{}).ProtoReflect().Descriptor(), map[string]protoreflect.FieldNumber{
+			"certification": 33, "certification_country": 34,
+		}},
+	}
+	for _, c := range cases {
+		assertFieldNumbers(t, c.desc, c.want)
+		for name := range c.want {
+			fd := c.desc.Fields().ByName(protoreflect.Name(name))
+			if fd == nil {
+				continue
+			}
+			if fd.Kind() != protoreflect.StringKind || fd.Cardinality() != protoreflect.Optional {
+				t.Errorf("%s.%s: kind %v cardinality %v, want singular string", c.desc.Name(), name, fd.Kind(), fd.Cardinality())
+			}
+		}
 	}
 }
 
