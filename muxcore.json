@@ -1,6 +1,6 @@
 {
   "name": "contracts-metadata",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Metadata provider contract interfaces for MuxCore",
   "capabilities": ["contracts.metadata"],
   "roles": ["contracts"]
