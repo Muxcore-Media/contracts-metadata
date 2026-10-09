@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `certification` and `certification_country` on `GetMovieDetailsResponse` (fields **28**, **29**) and `GetTVDetailsResponse` (fields **33**, **34**): the provider's raw certification for one configured ISO 3166-1 alpha-2 country, empty when none (ADR-0031 §2, roadmap T-M4-01 S4a).
+- `contract_test.go` freezes the new field numbers and types.
+
+### Compatibility
+- Additive and wire compatible: old readers ignore the fields, old implementers leave them empty.
+- metadata-tmdb's own `proto/metadatav1` copy must carry the identical numbers, names and types (media-movies decodes that copy from the same server).
+
 ## [0.2.0] - 2026-10-05
 
 ### Changed

@@ -109,6 +109,15 @@ message GetMovieDetailsResponse {
   repeated Video videos = 25;
   repeated Credits credits = 26;
   Collection belongs_to_collection = 27;
+  // Raw provider certification for certification_country (TMDB: release_dates),
+  // e.g. "PG-13" or "NR"; trimmed, control characters removed, at most 16 bytes.
+  // Empty when the provider has none. Not validated against a rating ladder:
+  // the owning media module maps it (ADR-0031 §2) and treats unknown or empty
+  // values as unavailable, never unrestricted. An operator rating always wins.
+  string certification = 28;
+  // ISO 3166-1 alpha-2 country the certification applies to (e.g. "US");
+  // empty when certification is empty.
+  string certification_country = 29;
 }
 
 message Collection {
@@ -231,6 +240,12 @@ message GetTVDetailsResponse {
   bool in_production = 30;
   string imdb_id = 31;
   int32 tvdb_id = 32;
+  // Raw provider content rating for certification_country (TMDB: content_ratings),
+  // e.g. "TV-MA"; same rules as GetMovieDetailsResponse.certification.
+  string certification = 33;
+  // ISO 3166-1 alpha-2 country the certification applies to (e.g. "US");
+  // empty when certification is empty.
+  string certification_country = 34;
 }
 
 message CreatedBy {
