@@ -36,6 +36,18 @@ Implementers should honor `external_ids` when `id` is zero and the provider supp
 
 `Episode.still_url` is the fully qualified still image URL (parity with movie `poster_url`). Prefer `GetEpisodeDetails` over fetching an entire season when refreshing one episode.
 
+## Content certification (ADR-0031 §2)
+
+| Message | `certification` | `certification_country` |
+|---------|-----------------|-------------------------|
+| `GetMovieDetailsResponse` | tag **28** (string) | tag **29** (string) |
+| `GetTVDetailsResponse` | tag **33** (string) | tag **34** (string) |
+
+- `certification` is the provider's **raw** value for one configured ISO 3166-1 alpha-2 country (e.g. `PG-13`, `TV-MA`, `NR`, or a non-US token such as `15`). Implementers trim it, strip control characters and return it only if it is at most 16 bytes; they do **not** map it onto a rating ladder.
+- Both fields are empty when the provider has no certification for that country. Empty is never an error and never means "unrestricted".
+- Consumers (media-movies, media-tvshows) own the mapping: an `operator` rating always wins, and an empty or unknown token is *unavailable* (ADR-0031 §2.5).
+- The tags are frozen in `contract_test.go`. metadata-tmdb also serves a deprecated copy (`metadata-tmdb/proto/metadatav1`) decoded by media-movies; both copies must keep identical numbers, names and types for every message the server returns.
+
 ## Discovery beyond trending/popular
 
 `ListSimilar` and `ListRecommendations` accept media type, provider `id`, and paging. Implementers may return `Unimplemented` until supported; callers should degrade gracefully.

@@ -664,8 +664,17 @@ type GetMovieDetailsResponse struct {
 	Videos              []*Video               `protobuf:"bytes,25,rep,name=videos,proto3" json:"videos,omitempty"`
 	Credits             []*Credits             `protobuf:"bytes,26,rep,name=credits,proto3" json:"credits,omitempty"`
 	BelongsToCollection *Collection            `protobuf:"bytes,27,opt,name=belongs_to_collection,json=belongsToCollection,proto3" json:"belongs_to_collection,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// Raw provider certification for certification_country (TMDB: release_dates),
+	// e.g. "PG-13" or "NR"; trimmed, control characters removed, at most 16 bytes.
+	// Empty when the provider has none. Not validated against a rating ladder:
+	// the owning media module maps it (ADR-0031 §2) and treats unknown or empty
+	// values as unavailable, never unrestricted. An operator rating always wins.
+	Certification string `protobuf:"bytes,28,opt,name=certification,proto3" json:"certification,omitempty"`
+	// ISO 3166-1 alpha-2 country the certification applies to (e.g. "US");
+	// empty when certification is empty.
+	CertificationCountry string `protobuf:"bytes,29,opt,name=certification_country,json=certificationCountry,proto3" json:"certification_country,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *GetMovieDetailsResponse) Reset() {
@@ -885,6 +894,20 @@ func (x *GetMovieDetailsResponse) GetBelongsToCollection() *Collection {
 		return x.BelongsToCollection
 	}
 	return nil
+}
+
+func (x *GetMovieDetailsResponse) GetCertification() string {
+	if x != nil {
+		return x.Certification
+	}
+	return ""
+}
+
+func (x *GetMovieDetailsResponse) GetCertificationCountry() string {
+	if x != nil {
+		return x.CertificationCountry
+	}
+	return ""
 }
 
 type Collection struct {
@@ -1760,8 +1783,14 @@ type GetTVDetailsResponse struct {
 	InProduction        bool                   `protobuf:"varint,30,opt,name=in_production,json=inProduction,proto3" json:"in_production,omitempty"`
 	ImdbId              string                 `protobuf:"bytes,31,opt,name=imdb_id,json=imdbId,proto3" json:"imdb_id,omitempty"`
 	TvdbId              int32                  `protobuf:"varint,32,opt,name=tvdb_id,json=tvdbId,proto3" json:"tvdb_id,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// Raw provider content rating for certification_country (TMDB: content_ratings),
+	// e.g. "TV-MA"; same rules as GetMovieDetailsResponse.certification.
+	Certification string `protobuf:"bytes,33,opt,name=certification,proto3" json:"certification,omitempty"`
+	// ISO 3166-1 alpha-2 country the certification applies to (e.g. "US");
+	// empty when certification is empty.
+	CertificationCountry string `protobuf:"bytes,34,opt,name=certification_country,json=certificationCountry,proto3" json:"certification_country,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *GetTVDetailsResponse) Reset() {
@@ -2009,6 +2038,20 @@ func (x *GetTVDetailsResponse) GetTvdbId() int32 {
 		return x.TvdbId
 	}
 	return 0
+}
+
+func (x *GetTVDetailsResponse) GetCertification() string {
+	if x != nil {
+		return x.Certification
+	}
+	return ""
+}
+
+func (x *GetTVDetailsResponse) GetCertificationCountry() string {
+	if x != nil {
+		return x.CertificationCountry
+	}
+	return ""
 }
 
 type CreatedBy struct {
@@ -3658,7 +3701,7 @@ const file_muxcore_metadata_v1_metadata_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1a\n" +
 	"\blanguage\x18\x02 \x01(\tR\blanguage\x12,\n" +
 	"\x12append_to_response\x18\x03 \x03(\tR\x10appendToResponse\x12C\n" +
-	"\fexternal_ids\x18\x04 \x01(\v2 .muxcore.metadata.v1.ExternalIdsR\vexternalIds\"\xa5\b\n" +
+	"\fexternal_ids\x18\x04 \x01(\v2 .muxcore.metadata.v1.ExternalIdsR\vexternalIds\"\x80\t\n" +
 	"\x17GetMovieDetailsResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12%\n" +
@@ -3692,7 +3735,9 @@ const file_muxcore_metadata_v1_metadata_proto_rawDesc = "" +
 	"poster_url\x18\x18 \x01(\tR\tposterUrl\x122\n" +
 	"\x06videos\x18\x19 \x03(\v2\x1a.muxcore.metadata.v1.VideoR\x06videos\x126\n" +
 	"\acredits\x18\x1a \x03(\v2\x1c.muxcore.metadata.v1.CreditsR\acredits\x12S\n" +
-	"\x15belongs_to_collection\x18\x1b \x01(\v2\x1f.muxcore.metadata.v1.CollectionR\x13belongsToCollection\"v\n" +
+	"\x15belongs_to_collection\x18\x1b \x01(\v2\x1f.muxcore.metadata.v1.CollectionR\x13belongsToCollection\x12$\n" +
+	"\rcertification\x18\x1c \x01(\tR\rcertification\x123\n" +
+	"\x15certification_country\x18\x1d \x01(\tR\x14certificationCountry\"v\n" +
 	"\n" +
 	"Collection\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
@@ -3764,7 +3809,7 @@ const file_muxcore_metadata_v1_metadata_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1a\n" +
 	"\blanguage\x18\x02 \x01(\tR\blanguage\x12,\n" +
 	"\x12append_to_response\x18\x03 \x03(\tR\x10appendToResponse\x12C\n" +
-	"\fexternal_ids\x18\x04 \x01(\v2 .muxcore.metadata.v1.ExternalIdsR\vexternalIds\"\x83\n" +
+	"\fexternal_ids\x18\x04 \x01(\v2 .muxcore.metadata.v1.ExternalIdsR\vexternalIds\"\xde\n" +
 	"\n" +
 	"\x14GetTVDetailsResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
@@ -3804,7 +3849,9 @@ const file_muxcore_metadata_v1_metadata_proto_rawDesc = "" +
 	"\x0eorigin_country\x18\x1d \x03(\tR\roriginCountry\x12#\n" +
 	"\rin_production\x18\x1e \x01(\bR\finProduction\x12\x17\n" +
 	"\aimdb_id\x18\x1f \x01(\tR\x06imdbId\x12\x17\n" +
-	"\atvdb_id\x18  \x01(\x05R\x06tvdbIdJ\x04\b\x12\x10\x13\"R\n" +
+	"\atvdb_id\x18  \x01(\x05R\x06tvdbId\x12$\n" +
+	"\rcertification\x18! \x01(\tR\rcertification\x123\n" +
+	"\x15certification_country\x18\" \x01(\tR\x14certificationCountryJ\x04\b\x12\x10\x13\"R\n" +
 	"\tCreatedBy\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +

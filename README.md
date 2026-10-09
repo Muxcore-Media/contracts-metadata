@@ -22,6 +22,7 @@ Contract repo capability: **`contracts.metadata`**. Implementers advertise capab
 - Detail/season/episode/collection requests use provider-neutral **`id`** plus optional **`external_ids`** (`tmdb_id`, `tvdb_id`, `imdb_id`).
 - `SearchRequest.include_adult` defaults false when unset; `region` carries ISO 3166-1 localization.
 - `GetTVDetailsResponse.in_production` is a **bool** (field 30); field 18 is reserved.
+- `GetMovieDetailsResponse` / `GetTVDetailsResponse` carry `certification` + `certification_country` (movie 28/29, TV 33/34): the raw provider certification for one configured country, empty when none. See [COMPATIBILITY.md](COMPATIBILITY.md#content-certification-adr-0031-2).
 
 ## Version
 
