@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.1] - 2026-10-09
 
 ### Added
 - `certification` and `certification_country` on `GetMovieDetailsResponse` (fields **28**, **29**) and `GetTVDetailsResponse` (fields **33**, **34**): the provider's raw certification for one configured ISO 3166-1 alpha-2 country, empty when none (ADR-0031 §2, roadmap T-M4-01 S4a).
